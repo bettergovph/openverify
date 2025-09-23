@@ -1,36 +1,94 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# open-philsys
 
-## Getting Started
+Developer-focused toolkit for integrating Philippine National ID (PhilSys) QR verification. Built on Next.js with a mobile-first UI and server APIs that mirror the official PhilSys flows—so you can embed scanning and verification into your own applications quickly.
 
-First, run the development server:
+## What You Get
+
+- **Unified verification pipeline** – Detect Version 1 legacy PhilIDs and Version 3 ePhilIDs, perform signature checks, and normalize the data.
+- **Server proxy to PhilSys** – `/api/verify` forwards requests to `https://verify.philsys.gov.ph/api/verify` with the required headers, user agent, and cookies. Optional automated session bootstrapping.
+- **Image-to-QR endpoint** – `/api/scan-image` accepts uploads, extracts QR codes (Jimp + jsQR), and routes them through the same verifier.
+- **Pragmatic logging** – `[PhilSys]` console diagnostics for every decoding and verification step.
+
+## Repository Layout
+
+| Path | Purpose |
+| --- | --- |
+| `src/app/page.tsx` | Mobile-first verification console UI |
+| `src/hooks/usePhilSysVerification.ts` | Client hook orchestrating legacy/ePhilID flows |
+| `src/lib/philsys/verification.ts` | Signature validation, CBOR decoding, formatting helpers |
+| `src/lib/philsys/session.ts` | PhilSys session bootstrapper and cookie cache |
+| `src/app/api/verify/route.ts` | Proxy to the official PhilSys `/api/verify` |
+| `src/app/api/scan-image/route.ts` | Image upload & QR decoding endpoint |
+| `src/app/api/cose/route.ts` | CBOR decoding smoke test |
+
+## Running Locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Type checking:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx tsc --noEmit
+```
 
-## Learn More
+## Environment Variables
 
-To learn more about Next.js, take a look at the following resources:
+Create `.env.local` (and `.env.production` for deployments) to override defaults:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable | Description | Notes |
+| --- | --- | --- |
+| `NEXT_PUBLIC_PHILSYS_PUBLIC_KEY` | Base64 Ed25519 public key for legacy PhilID verification | Falls back to the original dump’s key if unset. |
+| `PHILSYS_VERIFY_COOKIE` | Optional PhilSys cookie string | Include `__verify-token`, `_ga`, `_ga_9P2BTMLQFL`, etc. If omitted, the proxy will fetch the site once and cache issued cookies for 5 minutes. |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## REST Endpoints
 
-## Deploy on Vercel
+### `POST /api/scan-image`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Primary integration point. Send a multipart form with an image then the server extracts the QR code, runs the verification pipeline, and returns the result.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Form field** – `file` (required)
+- **Response** – `{ qrString: string, result: VerificationResult }`
+
+```bash
+curl -X POST http://localhost:3000/api/scan-image \
+  -F 'file=@/path/to/qr-photo.jpg'
+```
+
+### `POST /api/verify`
+
+Forwards a normalized PhilID/ePhilID payload to the official PhilSys verifier.
+
+```bash
+curl -X POST http://localhost:3000/api/verify \
+  -H 'Content-Type: application/json' \
+  -d '{"d":"2022-05-11","i":"PSA","img":"","sb":{"BF":"[6,3]","DOB":"2003-05-27","PCN":"2795801750683042","POB":"City of Cabanatuan,Nueva Ecija","fn":"JARIEL","ln":"QUE","mn":"ATIENZA","s":"Male","sf":""}}'
+```
+
+### `POST /api/cose`
+
+Quick CBOR sanity check—useful for gating requests before going upstream. Returns boolean JSON.
+
+## Verification Pipeline
+
+1. **Detect version** (`checkVersion`) – JSON payload ⇒ v1 (legacy), otherwise v3 (ePhilID).
+2. **Legacy PhilID**
+   - Normalize payload (`formatVersion1`) and sanitize text.
+   - Verify Ed25519 signature (`verifyEddsa`).
+   - Format data for display (`formatLegacyData` / `formatDisplayData`).
+   - Optional online check via `/api/verify` (results: ACTIVATED, REVOKED, etc.).
+3. **ePhilID**
+   - Strip prefix, base45 decode, inflate, and CBOR decode (`cborToJson`).
+   - Validate country code, convert embedded image to base64.
+   - Submit to `/api/verify` for activation status.
+4. **Result packaging** – UI receives the structured data, statuses, and helper messages.
+
+## Troubleshooting
+
+- **HTTP 400 from `/api/verify`** – Cookie missing/expired. Supply a fresh `PHILSYS_VERIFY_COOKIE` or let the proxy bootstrap a new one (ensure outbound access).
+- **`hashes.sha512 not set`** – Restart after `npm install`; the verification module wires `@noble/hashes` on load.
+- **`/api/scan-image` returns 422** – QR not detected. Provide clearer/larger images with the code centered.
