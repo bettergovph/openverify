@@ -2,6 +2,10 @@
 
 Developer-focused toolkit for integrating Philippine National ID (PhilSys) QR verification. Built on Next.js with a mobile-first UI and server APIs that mirror the official PhilSys flows—so you can embed scanning and verification into your own applications quickly.
 
+<center>
+  <img width="1254" height="1074" alt="CleanShot 2025-09-23 at 19 39 24@2x" src="https://github.com/user-attachments/assets/7dbaaf01-af7a-4865-ba03-ddfcbd2bea37" />
+</center>
+
 ## What You Get
 
 - **Unified verification pipeline** – Detect Version 1 legacy PhilIDs and Version 3 ePhilIDs, perform signature checks, and normalize the data.
