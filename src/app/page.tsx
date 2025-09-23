@@ -25,32 +25,30 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex justify-center items-center mb-4">
-            <Shield className="w-12 h-12 text-blue-600 mr-3" />
-            <h1 className="text-4xl font-bold text-gray-800">PhilSys QR Verifier</h1>
+    <div className="min-h-screen w-full bg-[var(--background)] text-[var(--foreground)]">
+      <div className="mx-auto flex w-full max-w-xl flex-col">
+        <header className="flex flex-col gap-4 border-b border-[var(--border)] px-4 py-6">
+          <div className="flex items-center gap-3">
+            <Shield className="h-10 w-10 text-[var(--accent)]" />
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-[var(--accent)]">PhilSys</p>
+              <h1 className="text-2xl font-semibold leading-tight">QR Verification Console</h1>
+            </div>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Scan and verify PhilSys QR codes for both legacy PhilID and ePhilID formats.
-            This open-source verifier integrates with the official PhilSys verification system.
+          <p className="text-sm leading-relaxed text-blue-100">
+            Verify legacy PhilID and ePhilID QR codes with a streamlined, mobile-first experience.
           </p>
-        </div>
+        </header>
 
-        {/* Main Content */}
-        <div className="max-w-4xl mx-auto">
+        <main className="flex flex-1 flex-col gap-6 px-4 py-6">
           {!verificationResult && !isVerifying && (
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center mb-6">
-                <Scan className="w-16 h-16 text-blue-600 mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold text-gray-800 mb-2">
-                  Ready to Verify
-                </h2>
-                <p className="text-gray-600">
-                  Choose your preferred scanning method to verify a PhilSys QR code
-                </p>
+            <section className="flex flex-col gap-6 border border-[var(--border)] bg-[var(--surface)] p-5">
+              <div className="flex items-center gap-3">
+                <Scan className="h-8 w-8 text-[var(--accent)]" />
+                <div>
+                  <h2 className="text-lg font-semibold uppercase tracking-wide text-blue-100">Ready To Verify</h2>
+                  <p className="text-sm text-blue-200">Choose how you want to scan your PhilSys QR code.</p>
+                </div>
               </div>
 
               <QRScanner
@@ -59,19 +57,17 @@ export default function Home() {
                 isScanning={isScanning}
                 onToggleScanning={toggleScanning}
               />
-            </div>
+            </section>
           )}
 
           {isVerifying && (
-            <div className="bg-white rounded-lg shadow-lg p-8 text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                Verifying QR Code...
-              </h2>
-              <p className="text-gray-600">
-                Please wait while we verify the authenticity of the QR code
-              </p>
-            </div>
+            <section className="flex flex-col items-center gap-4 border border-[var(--border)] bg-[var(--surface)] p-6 text-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--accent)]"></div>
+              <div>
+                <h2 className="text-base font-semibold uppercase tracking-wide text-blue-100">Verifying QR Code</h2>
+                <p className="mt-2 text-sm text-blue-200">Please wait while we confirm the authenticity of the credential.</p>
+              </div>
+            </section>
           )}
 
           {verificationResult && (
@@ -82,25 +78,22 @@ export default function Home() {
               onScanAnother={handleScanAnother}
             />
           )}
-        </div>
+        </main>
 
-        {/* Footer */}
-        <div className="text-center mt-12 text-gray-500">
-          <p className="mb-2">
-            Open source PhilSys QR verifier - Built with Next.js
-          </p>
-          <p className="text-sm">
-            For official verification, visit{' '}
+        <footer className="border-t border-[var(--border)] px-4 py-6 text-xs uppercase tracking-[0.3em] text-blue-200">
+          <p>Open Source PhilSys Verifier · Next.js</p>
+          <p className="mt-2 normal-case tracking-normal text-[var(--foreground)]">
+            Official portal: {' '}
             <a
               href="https://verify.philsys.gov.ph"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
+              className="text-[var(--accent)] underline-offset-4 hover:underline"
             >
               verify.philsys.gov.ph
             </a>
           </p>
-        </div>
+        </footer>
       </div>
     </div>
   );

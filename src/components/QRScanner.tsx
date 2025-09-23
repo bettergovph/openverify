@@ -54,6 +54,30 @@ export default function QRScanner({
       scannerRef.current.clear().catch(console.error);
     }
 
+    const applyScannerTheme = () => {
+      const container = document.getElementById('qr-reader');
+      if (!container) {
+        return;
+      }
+
+      container.classList.add('philsys-scanner');
+
+      const dashboard = document.getElementById('qr-reader__dashboard_section');
+      if (dashboard) {
+        dashboard.classList.add('philsys-scanner__dashboard');
+      }
+
+      const status = document.getElementById('qr-reader__status_span');
+      if (status) {
+        status.classList.add('philsys-scanner__status');
+      }
+
+      const cameraButtons = container.querySelectorAll('button');
+      cameraButtons.forEach((button) => {
+        button.classList.add('philsys-scanner__button');
+      });
+    };
+
     const scanner = new Html5QrcodeScanner(
       "qr-reader",
       {
@@ -78,6 +102,9 @@ export default function QRScanner({
       }
     );
 
+    // Apply design theming after html5-qrcode injects elements
+    requestAnimationFrame(() => applyScannerTheme());
+
     scannerRef.current = scanner;
   };
 
@@ -99,22 +126,22 @@ export default function QRScanner({
 
   if (!isScanning && scanMode === null) {
     return (
-      <div className="flex flex-col items-center space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800">Select Scanning Mode</h2>
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col gap-6">
+        <h2 className="text-base font-semibold uppercase tracking-wide text-blue-100">Select Scanning Mode</h2>
+        <div className="flex flex-col gap-4">
           <button
             onClick={() => handleScanModeSelect('camera')}
-            className="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-3 border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-[var(--foreground)] hover:bg-[var(--primary-strong)] hover:text-white"
           >
-            <Camera className="w-5 h-5 mr-2" />
+            <Camera className="h-5 w-5" />
             Camera Scanner
           </button>
           <button
             onClick={() => handleScanModeSelect('input')}
-            className="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="flex items-center justify-center gap-3 border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-[var(--foreground)] hover:bg-[var(--primary-strong)] hover:text-white"
           >
-            <Smartphone className="w-5 h-5 mr-2" />
-            Barcode Scanner
+            <Smartphone className="h-5 w-5" />
+            Manual Input
           </button>
         </div>
       </div>
@@ -123,15 +150,15 @@ export default function QRScanner({
 
   if (scanMode === 'camera') {
     return (
-      <div className="flex flex-col items-center space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800">Scan QR Code</h2>
-        <div id="qr-reader" className="w-full max-w-md"></div>
+      <div className="flex flex-col gap-4">
+        <h2 className="text-base font-semibold uppercase tracking-wide text-blue-100">Scan QR Code</h2>
+        <div id="qr-reader" className="w-full"></div>
         <button
           onClick={() => {
             setScanMode(null);
             onToggleScanning();
           }}
-          className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+          className="self-start border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold uppercase tracking-wide text-[var(--foreground)] hover:bg-[var(--primary-strong)] hover:text-white"
         >
           Cancel
         </button>
@@ -141,28 +168,28 @@ export default function QRScanner({
 
   if (scanMode === 'input') {
     return (
-      <div className="flex flex-col items-center space-y-4">
-        <h2 className="text-xl font-semibold text-gray-800">Enter QR Code Data</h2>
-        <form onSubmit={handleManualSubmit} className="w-full max-w-md space-y-4">
+      <div className="flex flex-col gap-4">
+        <h2 className="text-base font-semibold uppercase tracking-wide text-blue-100">Enter QR Data</h2>
+        <form onSubmit={handleManualSubmit} className="flex flex-col gap-4">
           <textarea
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
             placeholder="Paste or type QR code data here..."
-            className="w-full h-32 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="h-36 w-full border border-[var(--border)] bg-[var(--background)] p-3 text-sm text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
             autoFocus
           />
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={!manualInput.trim()}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+              className="flex-1 border border-[var(--border)] bg-[var(--primary)] px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white disabled:opacity-40"
             >
               Verify
             </button>
             <button
               type="button"
               onClick={() => setScanMode(null)}
-              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
+              className="border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold uppercase tracking-wide text-[var(--foreground)] hover:bg-[var(--primary-strong)] hover:text-white"
             >
               Cancel
             </button>
@@ -173,8 +200,8 @@ export default function QRScanner({
   }
 
   return (
-    <div className="flex items-center justify-center p-8">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+    <div className="flex items-center justify-center py-10">
+      <Loader2 className="h-6 w-6 animate-spin text-[var(--accent)]" />
     </div>
   );
 }

@@ -1,26 +1,95 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #050f1e;
+  --foreground: #f8fbff;
+  --surface: #0c1f3c;
+  --surface-muted: #12294b;
+  --border: #1f3c6d;
+  --primary: #2d6bf6;
+  --primary-strong: #1d4ed8;
+  --accent: #38bdf8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+#qr-reader.philsys-scanner {
+  border: 1px solid var(--border);
+  background-color: var(--surface-muted);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--foreground);
+}
+
+.philsys-scanner__dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.philsys-scanner__dashboard select,
+.philsys-scanner__dashboard input {
+  background-color: var(--background) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+  border-radius: 0 !important;
+  padding: 8px !important;
+  font-size: 0.75rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.philsys-scanner__status {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  color: var(--accent) !important;
+  padding-top: 4px;
+}
+
+.philsys-scanner__button {
+  background-color: var(--surface-muted) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--foreground) !important;
+  border-radius: 0 !important;
+  padding: 8px 12px !important;
+  text-transform: uppercase;
+  font-size: 0.7rem !important;
+  letter-spacing: 0.18em;
+  transition: background-color 150ms ease;
+}
+
+.philsys-scanner__button:hover,
+.philsys-scanner__button:focus {
+  background-color: var(--primary-strong) !important;
+  color: #ffffff !important;
+}
+
+.philsys-scanner video {
+  width: 100% !important;
+  border: 1px solid var(--border);
+  border-radius: 0;
 }

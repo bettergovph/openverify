@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle, XCircle, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { CheckCircle, XCircle, AlertTriangle, WifiOff } from 'lucide-react';
 import { VerificationStatus, IDType, PersonalInfo } from '@/lib/types';
 
 interface VerificationResultProps {
@@ -10,189 +10,169 @@ interface VerificationResultProps {
   onScanAnother: () => void;
 }
 
-export default function VerificationResult({ 
-  status, 
-  type, 
-  personalInfo, 
-  onScanAnother 
+export default function VerificationResult({
+  status,
+  type,
+  personalInfo,
+  onScanAnother,
 }: VerificationResultProps) {
   const getStatusConfig = () => {
     switch (status) {
       case 'ACTIVATED':
         return {
-          icon: <CheckCircle className="w-16 h-16 text-green-500" />,
-          title: `${type} has been Verified`,
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
-          textColor: 'text-green-800'
+          icon: CheckCircle,
+          iconClass: 'text-[var(--accent)]',
+          title: `${type} Verified`,
+          tone: 'text-blue-100',
         };
       case 'VALID':
         return {
-          icon: <CheckCircle className="w-16 h-16 text-green-500" />,
-          title: 'PhilSys QR code is valid',
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-200',
-          textColor: 'text-green-800'
+          icon: CheckCircle,
+          iconClass: 'text-[var(--accent)]',
+          title: 'PhilSys QR Code is valid',
+          tone: 'text-blue-100',
         };
       case 'REVOKED':
         return {
-          icon: <XCircle className="w-16 h-16 text-red-500" />,
-          title: 'This card has been deactivated',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
-          textColor: 'text-red-800'
+          icon: XCircle,
+          iconClass: 'text-red-400',
+          title: 'Credential is revoked',
+          tone: 'text-red-200',
         };
       case 'INVALID':
       case 'TAMPERED':
         return {
-          icon: <XCircle className="w-16 h-16 text-red-500" />,
-          title: 'QR Code could not be read',
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-200',
-          textColor: 'text-red-800'
+          icon: XCircle,
+          iconClass: 'text-red-400',
+          title: 'QR code could not be validated',
+          tone: 'text-red-200',
         };
       case 'OFFLINE':
         return {
-          icon: <WifiOff className="w-16 h-16 text-yellow-500" />,
-          title: `Please connect to the internet to verify the authenticity of the ${type}`,
-          bgColor: 'bg-yellow-50',
-          borderColor: 'border-yellow-200',
-          textColor: 'text-yellow-800'
+          icon: WifiOff,
+          iconClass: 'text-yellow-300',
+          title: 'Offline verification required',
+          tone: 'text-yellow-200',
         };
       case 'ERROR':
         return {
-          icon: <AlertTriangle className="w-16 h-16 text-orange-500" />,
-          title: 'Could not Verify. Please Try Again.',
-          bgColor: 'bg-orange-50',
-          borderColor: 'border-orange-200',
-          textColor: 'text-orange-800'
+          icon: AlertTriangle,
+          iconClass: 'text-orange-300',
+          title: 'Verification failed',
+          tone: 'text-orange-200',
         };
       default:
         return {
-          icon: <AlertTriangle className="w-16 h-16 text-gray-500" />,
-          title: 'Unknown status',
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-200',
-          textColor: 'text-gray-800'
+          icon: AlertTriangle,
+          iconClass: 'text-blue-200',
+          title: 'Status unavailable',
+          tone: 'text-blue-200',
         };
     }
   };
 
-  const config = getStatusConfig();
+  const { icon: Icon, iconClass, title, tone } = getStatusConfig();
   const isSuccess = status === 'ACTIVATED' || status === 'VALID';
   const isError = status === 'INVALID' || status === 'TAMPERED';
 
   return (
-    <div className={`max-w-2xl mx-auto p-6 rounded-lg border-2 ${config.bgColor} ${config.borderColor}`}>
-      {/* Status Header */}
-      <div className="text-center mb-6">
-        <div className="flex justify-center mb-4">
-          {config.icon}
+    <div className="flex flex-col gap-6 border border-[var(--border)] bg-[var(--surface)] p-5">
+      <header className="flex items-center gap-4">
+        <Icon className={`h-12 w-12 ${iconClass}`} />
+        <div>
+          <h2 className={`text-base font-semibold uppercase tracking-wide ${tone}`}>{title}</h2>
+          <p className="text-xs uppercase tracking-[0.3em] text-blue-200">{type}</p>
         </div>
-        <h2 className={`text-2xl font-bold ${config.textColor}`}>
-          {config.title}
-        </h2>
-      </div>
+      </header>
 
-      {/* Personal Information Display */}
       {personalInfo && isSuccess && (
-        <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+        <section className="flex flex-col gap-4 border border-[var(--border)] bg-[var(--surface-muted)] p-4">
           {personalInfo.image && (
-            <div className="text-center mb-6">
-              <img 
+            <div className="flex items-center justify-center">
+              <img
                 src={`data:image/png;base64,${personalInfo.image}`}
                 alt="ID Photo"
-                className="w-20 h-20 mx-auto rounded-lg border-2 border-gray-200"
+                className="h-24 w-24 border border-[var(--border)] object-cover"
               />
             </div>
           )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <strong>Last Name:</strong> {personalInfo.lastName.toUpperCase()}
+          <dl className="grid grid-cols-1 gap-3 text-xs uppercase tracking-wide text-blue-100">
+            <div className="flex justify-between border-b border-[var(--border)] pb-1">
+              <dt>Last Name</dt>
+              <dd>{personalInfo.lastName.toUpperCase()}</dd>
             </div>
-            <div>
-              <strong>First Name:</strong> {personalInfo.firstName.toUpperCase()}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1">
+              <dt>First Name</dt>
+              <dd>{personalInfo.firstName.toUpperCase()}</dd>
             </div>
-            <div>
-              <strong>Middle Name:</strong> {personalInfo.middleName.toUpperCase()}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1">
+              <dt>Middle Name</dt>
+              <dd>{personalInfo.middleName.toUpperCase()}</dd>
             </div>
-            <div>
-              <strong>Suffix:</strong> {personalInfo.suffix.toUpperCase()}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1">
+              <dt>Suffix</dt>
+              <dd>{personalInfo.suffix.toUpperCase()}</dd>
             </div>
-            <div>
-              <strong>Sex:</strong> {personalInfo.sex.toUpperCase()}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1">
+              <dt>Sex</dt>
+              <dd>{personalInfo.sex.toUpperCase()}</dd>
             </div>
-            <div>
-              <strong>Date of Birth:</strong> {personalInfo.dateOfBirth}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1 normal-case">
+              <dt>Date of Birth</dt>
+              <dd>{personalInfo.dateOfBirth}</dd>
             </div>
-            <div className="md:col-span-2">
-              <strong>Place of Birth:</strong> {personalInfo.placeOfBirth.toUpperCase()}
+            <div className="flex flex-col gap-1 border-b border-[var(--border)] pb-2 text-left normal-case">
+              <dt className="text-xs uppercase tracking-[0.3em] text-blue-200">Place of Birth</dt>
+              <dd className="text-sm font-semibold text-[var(--foreground)]">{personalInfo.placeOfBirth.toUpperCase()}</dd>
             </div>
-            <div>
-              <strong>PhilSys Card Number (PCN):</strong> {personalInfo.pcn}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1 normal-case">
+              <dt>PCN</dt>
+              <dd>{personalInfo.pcn}</dd>
             </div>
-            <div>
-              <strong>Date of Issuance:</strong> {personalInfo.dateOfIssuance}
+            <div className="flex justify-between border-b border-[var(--border)] pb-1 normal-case">
+              <dt>Date Issued</dt>
+              <dd>{personalInfo.dateOfIssuance}</dd>
             </div>
-            <div className="md:col-span-2">
-              <strong>Best Capture Finger:</strong> {personalInfo.bestCaptureFinger}
+            <div className="flex flex-col gap-1 text-left normal-case">
+              <dt className="text-xs uppercase tracking-[0.3em] text-blue-200">Best Capture Finger</dt>
+              <dd className="text-sm font-semibold text-[var(--foreground)]">{personalInfo.bestCaptureFinger}</dd>
             </div>
-          </div>
-        </div>
+          </dl>
+        </section>
       )}
 
-      {/* Error Information */}
       {isError && (
-        <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <h3 className="font-bold text-lg mb-4">
-            The result is probably due to any of the following reasons:
-          </h3>
-          <ul className="list-disc list-inside space-y-2 text-gray-700">
-            <li>The QR Code is damaged.</li>
-            <li>The information in the QR Code has been tampered with.</li>
-            <li>The QR Code is not from PhilID or ePhilID.</li>
+        <section className="border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-blue-100">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-red-300">Investigate Issues</h3>
+          <ul className="space-y-2">
+            <li>The QR code may be damaged.</li>
+            <li>Embedded data could have been altered.</li>
+            <li>The QR content might not originate from PhilID or ePhilID.</li>
           </ul>
-          <p className="mt-4 text-sm text-gray-600">
-            Note that the relying party should try scanning the PhilID or ePhilID at least 3 times.
+          <p className="mt-4 text-xs text-blue-200">
+            Attempt at least three scans. If problems persist, direct the cardholder to a PhilSys Registration Center or email info@philsys.gov.ph.
           </p>
-          <p className="mt-2 text-sm text-gray-600">
-            If the authentication results are still unsuccessful, the cardholder should bring their 
-            PhilID/ePhilID to the nearest PhilSys Registration Center or email info@philsys.gov.ph.
-          </p>
-        </div>
+        </section>
       )}
 
-      {/* Offline Information */}
       {status === 'OFFLINE' && type === 'PhilID' && (
-        <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <p className="text-gray-700">
-            In the event where internet connection is not possible, you may still verify the 
-            authenticity of the PhilID card by checking its security features.
-          </p>
-        </div>
+        <section className="border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-blue-100">
+          While offline, inspect the physical security features of the PhilID. Re-run verification when connectivity is restored.
+        </section>
       )}
 
-      {/* Revoked Information */}
       {status === 'REVOKED' && (
-        <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-          <p className="text-sm text-gray-600 mb-2">
-            Note that the relying party should try scanning the PhilID or ePhilID at least 3 times.
-          </p>
-          <p className="text-sm text-gray-600">
-            If the authentication results are still unsuccessful, the cardholder should bring their 
-            PhilID/ePhilID to the nearest PhilSys Registration Center or email info@philsys.gov.ph.
-          </p>
-        </div>
+        <section className="border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-blue-100">
+          Attempt multiple scans. Persistent revocation should be escalated to PhilSys through a registration center or via info@philsys.gov.ph.
+        </section>
       )}
 
-      {/* Action Button */}
-      <div className="text-center">
+      <div className="flex justify-end">
         <button
           onClick={onScanAnother}
-          className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+          className="border border-[var(--border)] bg-[var(--primary)] px-5 py-2 text-sm font-semibold uppercase tracking-wide text-white"
         >
-          VERIFY ANOTHER QR
+          Scan Another QR
         </button>
       </div>
     </div>
