@@ -1,21 +1,7 @@
 'use client';
 
 import { CheckCircle, XCircle, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
-import { VerificationStatus, IDType } from '@/lib/types';
-
-interface PersonalInfo {
-  image?: string;
-  lastName: string;
-  firstName: string;
-  middleName: string;
-  suffix: string;
-  sex: string;
-  dateOfBirth: string;
-  placeOfBirth: string;
-  pcn: string;
-  dateOfIssuance: string;
-  bestCaptureFinger: string;
-}
+import { VerificationStatus, IDType, PersonalInfo } from '@/lib/types';
 
 interface VerificationResultProps {
   status: VerificationStatus;

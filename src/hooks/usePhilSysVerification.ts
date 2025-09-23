@@ -103,6 +103,7 @@ export function usePhilSysVerification() {
           status: 'OFFLINE',
           type: 'PhilID',
           data: formattedData,
+          displayData,
           message: 'Offline verification - signature is valid'
         });
         return;
@@ -117,14 +118,16 @@ export function usePhilSysVerification() {
           setVerificationResult({
             status: 'ACTIVATED',
             type: 'PhilID',
-            data: formattedData
+            data: formattedData,
+            displayData
           });
         } else {
           await pushStatus('REVOKED', 'PhilID');
           setVerificationResult({
             status: 'REVOKED',
             type: 'PhilID',
-            data: formattedData
+            data: formattedData,
+            displayData
           });
         }
       } catch (error) {
@@ -133,6 +136,7 @@ export function usePhilSysVerification() {
           status: 'ERROR',
           type: 'PhilID',
           data: formattedData,
+          displayData,
           message: 'Online verification failed'
         });
       }
@@ -181,7 +185,7 @@ export function usePhilSysVerification() {
 
       // Decode CBOR data
       const objVal = cborToJson(qrString);
-      
+
       if (!objVal) {
         await pushStatus('INVALID', 'ePhilID');
         setVerificationResult({
@@ -191,6 +195,8 @@ export function usePhilSysVerification() {
         });
         return;
       }
+
+      const displayData = formatDisplayData(objVal);
 
       await pushStatus('VALID', 'ePhilID');
 
@@ -203,14 +209,16 @@ export function usePhilSysVerification() {
           setVerificationResult({
             status: 'ACTIVATED',
             type: 'ePhilID',
-            data: objVal
+            data: objVal,
+            displayData
           });
         } else {
           await pushStatus('REVOKED', 'ePhilID');
           setVerificationResult({
             status: 'REVOKED',
             type: 'ePhilID',
-            data: objVal
+            data: objVal,
+            displayData
           });
         }
       } catch (error) {
@@ -219,6 +227,7 @@ export function usePhilSysVerification() {
           status: 'ERROR',
           type: 'ePhilID',
           data: objVal,
+          displayData,
           message: 'Online verification failed'
         });
       }

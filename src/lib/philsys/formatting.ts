@@ -1,4 +1,4 @@
-import { EPhilID, PhilIDLegacy, FINGER_MAPPING, MONTH_NAMES } from '../types';
+import { EPhilID, PhilIDLegacy, PersonalInfo, FINGER_MAPPING, MONTH_NAMES } from '../types';
 
 /**
  * Formats readable date from YYYY-MM-DD format
@@ -36,7 +36,7 @@ export function formatFingerData(fingerData: string): string {
 /**
  * Formats text display for ePhilID
  */
-export function formatTextDisplay(objVal: EPhilID): string {
+export function formatTextDisplay(objVal: EPhilID): PersonalInfo {
   const dateIssued = objVal.d || 'Not Printed';
   const finger = formatFingerData(objVal.sb.BF);
   const readableDate = monthReadable(objVal.sb.DOB);
@@ -59,7 +59,7 @@ export function formatTextDisplay(objVal: EPhilID): string {
 /**
  * Formats text display for legacy PhilID
  */
-export function formatTextDisplayLegacy(objVal: PhilIDLegacy): string {
+export function formatTextDisplayLegacy(objVal: PhilIDLegacy): PersonalInfo {
   const dateIssued = objVal.DateIssued || 'Not Printed';
   const finger = formatFingerData(objVal.subject.BF);
   
@@ -81,7 +81,7 @@ export function formatTextDisplayLegacy(objVal: PhilIDLegacy): string {
 /**
  * Formats display data for both formats
  */
-export function formatDisplayData(data: EPhilID | PhilIDLegacy, isLegacy: boolean = false) {
+export function formatDisplayData(data: EPhilID | PhilIDLegacy, isLegacy: boolean = false): PersonalInfo {
   if (isLegacy) {
     return formatTextDisplayLegacy(data as PhilIDLegacy);
   } else {

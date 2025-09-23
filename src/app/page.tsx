@@ -4,7 +4,6 @@ import { useState } from 'react';
 import QRScanner from '@/components/QRScanner';
 import VerificationResult from '@/components/VerificationResult';
 import { usePhilSysVerification } from '@/hooks/usePhilSysVerification';
-import { formatDisplayData } from '@/lib/philsys/formatting';
 import { Shield, Scan } from 'lucide-react';
 
 export default function Home() {
@@ -79,7 +78,7 @@ export default function Home() {
             <VerificationResult
               status={verificationResult.status}
               type={verificationResult.type}
-              personalInfo={verificationResult.data ? formatDisplayData(verificationResult.data, verificationResult.type === 'PhilID') : undefined}
+              personalInfo={verificationResult.displayData}
               onScanAnother={handleScanAnother}
             />
           )}

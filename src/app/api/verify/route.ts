@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPhilSysCookie, capturePhilSysCookies } from '@/lib/philsys/session';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Mirror the publicly observed request headers so the upstream accepts our call.
-    // Tokens/cookies should be provided via PHILSYS_VERIFY_COOKIE env to avoid hardcoding secrets.
+    // Either reuse a supplied cookie or bootstrap it programmatically.
     const headers = new Headers({
       accept: '*/*',
       'accept-language': 'en-US,en;q=0.9',
@@ -23,19 +24,26 @@ export async function POST(request: NextRequest) {
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
+      'user-agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36',
       Referer: 'https://verify.philsys.gov.ph/',
     });
 
-    const cookie = process.env.PHILSYS_VERIFY_COOKIE;
-    if (cookie) {
-      headers.set('cookie', cookie);
+    const cookie = await getPhilSysCookie();
+    if (!cookie) {
+      return NextResponse.json(
+        { error: 'Unable to establish PhilSys session' },
+        { status: 503 },
+      );
     }
+    headers.set('cookie', cookie);
 
     const philsysResponse = await fetch('https://verify.philsys.gov.ph/api/verify', {
       method: 'POST',
       headers,
       body: JSON.stringify(qrData),
     });
+
+    capturePhilSysCookies(philsysResponse);
 
     // Return the response status and data
     const responseData = await philsysResponse.json().catch(() => ({}));

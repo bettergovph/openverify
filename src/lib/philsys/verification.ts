@@ -1,4 +1,6 @@
 import * as ed25519 from '@noble/ed25519';
+import { hashes } from '@noble/ed25519';
+import { sha512 } from '@noble/hashes/sha512';
 import * as CBOR from 'cbor-js';
 import { decode as base45Decode } from 'base45';
 import { PhilIDLegacy, EPhilID, QRVersion, QRData } from '../types';
@@ -11,6 +13,15 @@ if (envPublicKey) {
   console.log('[PhilSys] Using public key from NEXT_PUBLIC_PHILSYS_PUBLIC_KEY.');
 } else {
   console.warn('[PhilSys] NEXT_PUBLIC_PHILSYS_PUBLIC_KEY not set. Falling back to built-in key.');
+}
+
+if (!hashes.sha512) {
+  hashes.sha512 = (msg: Uint8Array): Uint8Array => sha512(msg);
+  console.log('[PhilSys] Configured ed25519 SHA-512 implementation.');
+}
+
+if (!hashes.sha512Async) {
+  hashes.sha512Async = async (msg: Uint8Array): Promise<Uint8Array> => sha512(msg);
 }
 
 /**

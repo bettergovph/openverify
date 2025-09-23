@@ -50,9 +50,24 @@ export type VerificationStatus =
 
 export type IDType = 'PhilID' | 'ePhilID';
 
+export interface PersonalInfo {
+  image?: string;
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  suffix: string;
+  sex: string;
+  dateOfBirth: string;
+  placeOfBirth: string;
+  pcn: string;
+  dateOfIssuance: string;
+  bestCaptureFinger: string;
+}
+
 export interface VerificationResult {
   status: VerificationStatus;
   data?: QRData;
+  displayData?: PersonalInfo;
   message?: string;
   type: IDType;
 }
