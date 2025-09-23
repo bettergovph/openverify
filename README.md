@@ -1,4 +1,4 @@
-# open-philsys
+# openverify
 
 Developer-focused toolkit for integrating Philippine National ID (PhilSys) QR verification. Built on Next.js with a mobile-first UI and server APIs that mirror the official PhilSys flows—so you can embed scanning and verification into your own applications quickly.
 
@@ -12,6 +12,7 @@ Developer-focused toolkit for integrating Philippine National ID (PhilSys) QR ve
 - **Server proxy to PhilSys** – `/api/verify` forwards requests to `https://verify.philsys.gov.ph/api/verify` with the required headers, user agent, and cookies. Optional automated session bootstrapping.
 - **Image-to-QR endpoint** – `/api/scan-image` accepts uploads, extracts QR codes (Jimp + jsQR), and routes them through the same verifier.
 - **Pragmatic logging** – `[PhilSys]` console diagnostics for every decoding and verification step.
+- **Public eVerify support (auto-detect)** – Automatically detects eVerify-style QR values (e.g., PCN or compact tokens), routes them to the public eVerify check, and handles eGovPH consent with polling.
 
 ## Repository Layout
 
@@ -24,6 +25,9 @@ Developer-focused toolkit for integrating Philippine National ID (PhilSys) QR ve
 | `src/app/api/verify/route.ts` | Proxy to the official PhilSys `/api/verify` |
 | `src/app/api/scan-image/route.ts` | Image upload & QR decoding endpoint |
 | `src/app/api/cose/route.ts` | CBOR decoding smoke test |
+| `src/lib/everify/index.ts` | eVerify helpers: type detection, normalization, UI mapping |
+| `src/app/api/everify/check/route.ts` | Proxy to `POST /api/pub/qr/check` (public eVerify) |
+| `src/app/api/everify/egov-ph/route.ts` | Proxy to `GET /api/pub/qr/egov_ph` with result normalization |
 
 ## Running Locally
 
@@ -77,9 +81,30 @@ curl -X POST http://localhost:3000/api/verify \
 
 Quick CBOR sanity check—useful for gating requests before going upstream. Returns boolean JSON.
 
+### `POST /api/everify/check`
+
+Proxy to the public eVerify QR classifier. Accepts the raw scanned value and returns a normalized shape plus display-friendly fields.
+
+- **Body** – `{ "value": string }`
+- **Response** – `{ normalized, personalInfo?, details[] }`
+
+```bash
+curl -X POST http://localhost:3000/api/everify/check \
+  -H 'Content-Type: application/json' \
+  -d '{"value":"2795801750683042"}'
+```
+
+### `GET /api/everify/egov-ph?tracking=...`
+
+Fetches full eGovPH profile after the holder accepts consent in the official app. The UI polls this endpoint for a short window when needed.
+
+- **Query** – `tracking` (required)
+- **Response** – `{ profile, personalInfo, details }`
+
 ## Verification Pipeline
 
 1. **Detect version** (`checkVersion`) – JSON payload ⇒ v1 (legacy), otherwise v3 (ePhilID).
+   - Additionally, the client auto-detects public eVerify values (numeric PCNs or compact tokens) and routes them to the eVerify flow below.
 2. **Legacy PhilID**
    - Normalize payload (`formatVersion1`) and sanitize text.
    - Verify Ed25519 signature (`verifyEddsa`).
@@ -90,6 +115,15 @@ Quick CBOR sanity check—useful for gating requests before going upstream. Retu
    - Validate country code, convert embedded image to base64.
    - Submit to `/api/verify` for activation status.
 4. **Result packaging** – UI receives the structured data, statuses, and helper messages.
+5. **Public eVerify (auto-detected)**
+   - `POST /api/everify/check` classifies the QR (e.g., National ID, National ID Signed, ePhilId, eGovPH).
+   - For `eGovPH`, the UI enters a `PENDING` state and polls `GET /api/everify/egov-ph?tracking=...` until the profile is populated or a short timeout elapses.
+   - Other types render immediately using normalized fields.
+
+### Notes on eGovPH consent
+
+- The production site uses Firebase Realtime Database to stream consent. This project uses short-lived HTTP polling instead (friendly to serverless deployments like Vercel).
+- A 200 response with `{ verified: false }` or no identity fields is treated as “not ready yet” and the UI remains pending.
 
 ## Troubleshooting
 

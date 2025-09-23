@@ -39,19 +39,21 @@ export type QRData = PhilIDLegacy | EPhilID;
 
 export type QRVersion = 1 | 3;
 
-export type VerificationStatus = 
-  | 'VALID' 
-  | 'INVALID' 
-  | 'TAMPERED' 
-  | 'ACTIVATED' 
-  | 'REVOKED' 
-  | 'OFFLINE' 
-  | 'ERROR';
+export type VerificationStatus =
+  | 'VALID'
+  | 'INVALID'
+  | 'TAMPERED'
+  | 'ACTIVATED'
+  | 'REVOKED'
+  | 'OFFLINE'
+  | 'ERROR'
+  | 'PENDING';
 
-export type IDType = 'PhilID' | 'ePhilID';
+export type IDType = 'PhilID' | 'ePhilID' | 'eVerify';
 
 export interface PersonalInfo {
   image?: string;
+  imageUrl?: string;
   lastName: string;
   firstName: string;
   middleName: string;
@@ -64,12 +66,18 @@ export interface PersonalInfo {
   bestCaptureFinger: string;
 }
 
+export interface DetailItem {
+  label: string;
+  value: string;
+}
+
 export interface VerificationResult {
   status: VerificationStatus;
-  data?: QRData;
+  data?: QRData | Record<string, unknown>;
   displayData?: PersonalInfo;
   message?: string;
   type: IDType;
+  extraDetails?: DetailItem[];
 }
 
 export interface FingerMapping {

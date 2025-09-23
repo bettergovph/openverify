@@ -75,6 +75,8 @@ export default function Home() {
               status={verificationResult.status}
               type={verificationResult.type}
               personalInfo={verificationResult.displayData}
+              message={verificationResult.message}
+              extraDetails={verificationResult.extraDetails}
               onScanAnother={handleScanAnother}
             />
           )}

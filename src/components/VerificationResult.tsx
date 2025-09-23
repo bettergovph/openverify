@@ -1,13 +1,15 @@
 'use client';
 
 import { CheckCircle, XCircle, AlertTriangle, WifiOff } from 'lucide-react';
-import { VerificationStatus, IDType, PersonalInfo } from '@/lib/types';
+import { VerificationStatus, IDType, PersonalInfo, DetailItem } from '@/lib/types';
 
 interface VerificationResultProps {
   status: VerificationStatus;
   type: IDType;
   personalInfo?: PersonalInfo;
   onScanAnother: () => void;
+  message?: string;
+  extraDetails?: DetailItem[];
 }
 
 export default function VerificationResult({
@@ -15,6 +17,8 @@ export default function VerificationResult({
   type,
   personalInfo,
   onScanAnother,
+  message,
+  extraDetails,
 }: VerificationResultProps) {
   const getStatusConfig = () => {
     switch (status) {
@@ -61,6 +65,13 @@ export default function VerificationResult({
           title: 'Verification failed',
           tone: 'text-orange-200',
         };
+      case 'PENDING':
+        return {
+          icon: AlertTriangle,
+          iconClass: 'text-yellow-300',
+          title: 'Action required',
+          tone: 'text-yellow-200',
+        };
       default:
         return {
           icon: AlertTriangle,
@@ -85,12 +96,20 @@ export default function VerificationResult({
         </div>
       </header>
 
+      {message && (
+        <section className="border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-blue-100">
+          {message}
+        </section>
+      )}
+
       {personalInfo && isSuccess && (
         <section className="flex flex-col gap-4 border border-[var(--border)] bg-[var(--surface-muted)] p-4">
-          {personalInfo.image && (
+          {(personalInfo.image || personalInfo.imageUrl) && (
             <div className="flex items-center justify-center">
               <img
-                src={`data:image/png;base64,${personalInfo.image}`}
+                src={personalInfo.image
+                  ? `data:image/png;base64,${personalInfo.image}`
+                  : personalInfo.imageUrl}
                 alt="ID Photo"
                 className="h-24 w-24 border border-[var(--border)] object-cover"
               />
@@ -137,6 +156,20 @@ export default function VerificationResult({
               <dt className="text-xs uppercase tracking-[0.3em] text-blue-200">Best Capture Finger</dt>
               <dd className="text-sm font-semibold text-[var(--foreground)]">{personalInfo.bestCaptureFinger}</dd>
             </div>
+          </dl>
+        </section>
+      )}
+
+      {extraDetails && extraDetails.length > 0 && (
+        <section className="border border-[var(--border)] bg-[var(--surface-muted)] p-4 text-sm text-blue-100">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-blue-200">Additional Details</h3>
+          <dl className="space-y-2">
+            {extraDetails.map((item) => (
+              <div key={`${item.label}-${item.value}`} className="flex justify-between gap-3">
+                <dt className="uppercase tracking-wide text-xs text-blue-200">{item.label}</dt>
+                <dd className="text-sm text-[var(--foreground)] text-right">{item.value}</dd>
+              </div>
+            ))}
           </dl>
         </section>
       )}
